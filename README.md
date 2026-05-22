@@ -104,8 +104,8 @@ See [`examples/sample-report.html`](examples/sample-report.html) for an example.
 
 The `examples/` directory contains:
 
-- `sample.har` — a realistic HAR file that triggers all checks
-- `sample-report.html` — the generated report from `sample.har`
+- `sample.har` - a realistic HAR file that triggers all checks
+- `sample-report.html` - the generated report from `sample.har`
 
 Run it yourself:
 
@@ -117,4 +117,4 @@ har-security-scan examples/sample.har --output my-report.html
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+MIT. See [LICENSE](LICENSE)
