@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HAR Security Scan Report</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect fill='%230f3040' width='24' height='24' rx='4'/><path fill='%23fff' d='M12 3L5 6.5v5c0 4.55 2.95 8.82 7 10 4.05-1.18 7-5.45 7-10v-5L12 3z'/><path fill='%230f3040' d='M10 14.17l-2.12-2.12-1.07 1.06L10 16.3l7-7-1.06-1.06L10 14.17z'/></svg>">
+<style>
+:root{
+  --wine:#0f3040;
+  --wine-mid:#1a4a5c;
+  --wine-light:#2a6478;
+  --wine-subtle:#e8f4f8;
+  --wine-border:#b8d8e4;
+  --body-bg:#f0f2f4;
+  --card-bg:#ffffff;
+  --text-primary:#0a1f28;
+  --text-secondary:#3a5a68;
+  --text-muted:#7a9daa;
+  --border:#dde4e8;
+  --radius:12px;
+  --shadow:0 2px 8px rgba(15,48,64,.09),0 0 0 1px rgba(15,48,64,.04);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.6;color:var(--text-primary);background:var(--body-bg)}
+a{color:var(--wine-light);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── Header ── */
+header{background:linear-gradient(135deg,var(--wine) 0%,var(--wine-mid) 100%);color:#fff;padding:0;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.header-inner{position:relative;padding:36px 32px;text-align:left}
+header h1{font-size:32px;font-weight:800;letter-spacing:-.5px;line-height:1.1;margin-bottom:8px}
+.header-subtitle{font-size:18px;font-weight:500;opacity:.75;margin-bottom:16px}
+.header-meta{display:flex;gap:0;flex-wrap:wrap;margin-top:12px}
+.header-meta-item{font-size:12px;opacity:.65;padding-right:20px;margin-right:20px;border-right:1px solid rgba(255,255,255,.2);line-height:2}
+.header-meta-item:last-child{border-right:none}
+.header-meta-label{opacity:.7;margin-right:4px}
+.header-meta-value{font-weight:600}
+.header-sev-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.header-sev-badge{font-size:11px;font-weight:700;padding:3px 12px;border-radius:4px}
+
+/* ── Nav ── */
+.nav-bar{background:var(--card-bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;box-shadow:0 1px 4px rgba(15,48,64,.06)}
+.nav-inner{padding:0 48px;display:flex;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-link{font-size:12px;font-weight:600;color:var(--wine-mid);padding:13px 0;flex:1;text-align:center;white-space:nowrap;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;text-decoration:none}
+.nav-link:hover{color:var(--wine);border-bottom-color:var(--wine-border);text-decoration:none}
+
+/* ── Layout ── */
+.container{padding:28px 48px 48px}
+
+/* ── Cards ── */
+.card-section{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.section-header{display:flex;align-items:center;gap:10px;padding:14px 24px;border-bottom:1px solid var(--wine-border);background:var(--wine-mid)}
+.section-icon{width:32px;height:32px;background:rgba(255,255,255,.15);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-title{font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1px;flex:1}
+.section-count{font-size:11px;font-weight:700;color:var(--wine-mid);background:rgba(255,255,255,.9);padding:2px 9px;border-radius:20px}
+.section-body{padding:22px 24px}
+
+/* ── Summary ── */
+.stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(15,48,64,.06)}
+.stat-value{font-size:26px;font-weight:800;line-height:1.1;margin-bottom:4px}
+.stat-label{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.summary-table{width:100%;border-collapse:collapse;font-size:13px}
+.summary-table th{text-align:left;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;padding:8px 12px;border-bottom:2px solid var(--border)}
+.summary-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-primary)}
+.summary-table tr:last-child td{border-bottom:none}
+.summary-table td.finding-count{font-weight:600;color:var(--text-secondary)}
+
+/* ── Severity pill ── */
+.sev-pill{font-size:11px;font-weight:700;padding:2px 10px;border-radius:5px;white-space:nowrap}
+
+/* ── Findings ── */
+.finding-list{display:flex;flex-direction:column;gap:8px}
+.finding-item{border-left:5px solid #cbd5e1;border-radius:0 10px 10px 0;overflow:hidden;border:1px solid var(--border);border-left-width:5px}
+.finding-summary{padding:13px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none;user-select:none;transition:filter .1s}
+.finding-summary::-webkit-details-marker{display:none}
+.finding-summary:hover{filter:brightness(.97)}
+details.finding-item[open] .expand-icon{transform:rotate(90deg)}
+.finding-title{font-weight:600;font-size:13px;flex:1;color:var(--text-primary)}
+.finding-count-badge{font-size:11px;font-weight:600;color:var(--text-muted);white-space:nowrap}
+.finding-body{padding:16px 18px;border-top:1px solid var(--border)}
+.expand-icon{font-size:9px;color:var(--text-muted);flex-shrink:0;transition:transform .15s;display:inline-block}
+
+/* ── Prose blocks ── */
+.prose-block{margin-bottom:14px}
+.prose-block:last-child{margin-bottom:0}
+.prose-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--wine);margin-bottom:6px}
+.remediation-label{color:#166534}
+.remediation-content{background:#f0fdf4;border-left-color:#86efac;color:#14532d}
+.remediation-details{margin-top:10px}
+.remediation-toggle{cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#166534;user-select:none}
+.remediation-toggle::-webkit-details-marker{display:none}
+details.remediation-details[open] .expand-icon-sm{transform:rotate(90deg)}
+.remediation-detail-body{margin-top:10px;font-size:12px;color:#14532d;line-height:1.7}
+.remediation-detail-body p{margin-bottom:8px}
+.remediation-detail-body pre{background:#fff;border:1px solid var(--wine-border);border-left:3px solid var(--wine-light);border-radius:6px;padding:10px 12px;font-family:'Consolas','Monaco',monospace;font-size:11px;overflow-x:auto;white-space:pre-wrap;margin-bottom:8px;color:#14532d}
+.remediation-detail-body a{color:#166534;text-decoration:underline}
+.remediation-detail-body strong{font-weight:700}
+.prose-content{font-size:13px;color:var(--text-secondary);line-height:1.75;background:var(--wine-subtle);border-left:3px solid var(--wine-border);border-radius:0 8px 8px 0;padding:10px 14px}
+
+/* ── Evidence list ── */
+.evidence-list{list-style:none;display:flex;flex-direction:column;gap:4px;background:var(--wine-subtle);border-left:3px solid var(--wine-border);border-radius:0 8px 8px 0;padding:10px 14px}
+.evidence-list li{font-size:12px;font-family:'Consolas','Monaco',monospace;color:var(--text-secondary);word-break:break-all}
+.evidence-more{color:var(--text-muted);font-style:italic;font-family:inherit}
+
+/* ── Misc ── */
+.empty-state{color:var(--text-muted);font-style:italic;font-size:13px;padding:8px 0}
+
+/* ── Footer ── */
+footer{background:var(--wine);color:rgba(255,255,255,.4);margin-top:8px;padding:14px 32px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:11px}
+footer a{color:rgba(255,255,255,.5);text-decoration:none}
+footer a:hover{color:#fff}
+.footer-brand{font-weight:700;color:rgba(255,255,255,.7);font-size:11px}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .stat-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:600px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .header-inner{padding:24px 20px}
+  .container{padding:20px 16px 40px}
+  .nav-inner{padding:0 16px}
+}
+
+/* ── Print ── */
+@media print{
+  body{background:#fff}
+  .nav-bar{display:none}
+  .container{padding:16px 0}
+  header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .card-section{box-shadow:none;border:1px solid var(--border);break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{margin:1.2cm;size:A4}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>HAR Security Scan Report</h1>
+    <div class="header-subtitle">Scanned: sample.har</div>
+    <div class="header-meta">
+      <span class="header-meta-item"><span class="header-meta-label">Generated on</span><span class="header-meta-value">Friday, 22 May 2026 23:40 (UTC+07:00)</span></span>
+    </div>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <div class="nav-inner"><a class="nav-link" href="#summary">Summary</a><a class="nav-link" href="#sev-high">High</a><a class="nav-link" href="#sev-medium">Medium</a><a class="nav-link" href="#sev-low">Low</a></div>
+</nav>
+
+<div class="container">
+
+<section class="card-section" id="summary">
+  <div class="section-header">
+    <span class="section-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="1" width="12" height="14" rx="2" stroke="white" stroke-width="1.5"/><line x1="5" y1="6" x2="11" y2="6" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="5" y1="9" x2="11" y2="9" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="5" y1="12" x2="8" y2="12" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    <h2 class="section-title">Summary</h2>
+    
+  </div>
+  <div class="section-body"><div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--wine)">6</div>
+      <div class="stat-label">Entries Scanned</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--wine)">13</div>
+      <div class="stat-label">Total Findings</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:#c62828">5</div>
+      <div class="stat-label">High</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:#d97706">7</div>
+      <div class="stat-label">Medium</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:#9e9d24">1</div>
+      <div class="stat-label">Low</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:#1565c0">0</div>
+      <div class="stat-label">Info</div>
+    </div></div><table class="summary-table">
+        <thead><tr><th>Finding</th><th>Severity</th><th>Occurrences</th></tr></thead>
+        <tbody>
+    <tr>
+      <td>Sensitive parameter in URL</td>
+      <td><span class="sev-pill" style="background:#c62828;color:#fff">High</span></td>
+      <td class="finding-count">1</td>
+    </tr>
+    <tr>
+      <td>Plain HTTP request (non-HTTPS)</td>
+      <td><span class="sev-pill" style="background:#c62828;color:#fff">High</span></td>
+      <td class="finding-count">1</td>
+    </tr>
+    <tr>
+      <td>Verbose error response</td>
+      <td><span class="sev-pill" style="background:#c62828;color:#fff">High</span></td>
+      <td class="finding-count">1</td>
+    </tr>
+    <tr>
+      <td>JWT token in response body</td>
+      <td><span class="sev-pill" style="background:#c62828;color:#fff">High</span></td>
+      <td class="finding-count">1</td>
+    </tr>
+    <tr>
+      <td>Personal data in URL</td>
+      <td><span class="sev-pill" style="background:#c62828;color:#fff">High</span></td>
+      <td class="finding-count">1</td>
+    </tr>
+    <tr>
+      <td>Mixed content (HTTP resources on HTTPS page)</td>
+      <td><span class="sev-pill" style="background:#d97706;color:#fff">Medium</span></td>
+      <td class="finding-count">1</td>
+    </tr>
+    <tr>
+      <td>Cookie missing Secure flag</td>
+      <td><span class="sev-pill" style="background:#d97706;color:#fff">Medium</span></td>
+      <td class="finding-count">1</td>
+    </tr>
+    <tr>
+      <td>Cookie missing HttpOnly flag</td>
+      <td><span class="sev-pill" style="background:#d97706;color:#fff">Medium</span></td>
+      <td class="finding-count">2</td>
+    </tr>
+    <tr>
+      <td>Missing Content-Security-Policy header</td>
+      <td><span class="sev-pill" style="background:#d97706;color:#fff">Medium</span></td>
+      <td class="finding-count">5</td>
+    </tr>
+    <tr>
+      <td>Missing Strict-Transport-Security header</td>
+      <td><span class="sev-pill" style="background:#d97706;color:#fff">Medium</span></td>
+      <td class="finding-count">5</td>
+    </tr>
+    <tr>
+      <td>Missing X-Content-Type-Options header</td>
+      <td><span class="sev-pill" style="background:#d97706;color:#fff">Medium</span></td>
+      <td class="finding-count">2</td>
+    </tr>
+    <tr>
+      <td>Missing X-Frame-Options header</td>
+      <td><span class="sev-pill" style="background:#d97706;color:#fff">Medium</span></td>
+      <td class="finding-count">5</td>
+    </tr>
+    <tr>
+      <td>Cookie missing SameSite attribute</td>
+      <td><span class="sev-pill" style="background:#9e9d24;color:#fff">Low</span></td>
+      <td class="finding-count">1</td>
+    </tr></tbody>
+      </table></div>
+</section>
+
+<section class="card-section" id="sev-high">
+  <div class="section-header">
+    <span class="section-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1.5L2.5 4.5V8c0 3.2 2.3 6 5.5 7 3.2-1 5.5-3.8 5.5-7V4.5L8 1.5z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><line x1="8" y1="6" x2="8" y2="9.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.5" r="0.8" fill="white"/></svg></span>
+    <h2 class="section-title">High Findings</h2>
+    <span class="section-count">5</span>
+  </div>
+  <div class="section-body"><div class="finding-list">
+    <details class="finding-item" style="border-left-color:#e53935" open>
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Sensitive parameter in URL</span>
+        <span class="sev-pill" style="background:#c62828;color:#fff">High</span>
+        <span class="finding-count-badge">1 occurrence</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">Auth tokens, API keys, or passwords were found in URL query parameters. These are logged by servers, proxies, and browser history, exposing credentials to unintended parties. Sensitive values should be sent in request headers or the request body instead.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Move sensitive values out of URLs. Pass API keys and tokens in the Authorization or X-API-Key request header instead.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>URLs are logged by web servers, CDNs, proxies, and appear in browser history. Any sensitive value in a URL is at risk of exposure.</p>
+<p><strong>Instead of:</strong></p>
+<pre>GET /api/data?api_key=sk-prod-abc123</pre>
+<p><strong>Use a request header:</strong></p>
+<pre>GET /api/data
+Authorization: Bearer sk-prod-abc123
+// or
+X-API-Key: sk-prod-abc123</pre>
+<p><strong>In Express.js:</strong></p>
+<pre>// Read from header, not query param
+const apiKey = req.headers['x-api-key'];
+if (!apiKey || apiKey !== process.env.API_KEY) {
+  return res.status(401).json({ error: 'Unauthorized' });
+}</pre>
+<p><strong>Verification:</strong> Re-export the HAR after the fix and rerun this scan. The finding should no longer appear.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>GET https://app.example.com/api/user?api_key=sk-prod-abc123secret&amp;page=1 (param: api_key)</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+    <details class="finding-item" style="border-left-color:#e53935" >
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Plain HTTP request (non-HTTPS)</span>
+        <span class="sev-pill" style="background:#c62828;color:#fff">High</span>
+        <span class="finding-count-badge">1 occurrence</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">One or more requests were made over unencrypted HTTP. Traffic transmitted over HTTP can be intercepted and modified by attackers on the same network. All requests should use HTTPS.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Enforce HTTPS for all requests. Redirect HTTP to HTTPS and enable HSTS.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>Plain HTTP traffic can be intercepted and modified by anyone on the same network (coffee shop Wi-Fi, corporate proxies, etc.).</p>
+<p><strong>Nginx: redirect HTTP to HTTPS:</strong></p>
+<pre>server {
+  listen 80;
+  server_name example.com;
+  return 301 https://$host$request_uri;
+}</pre>
+<p><strong>Express.js: force HTTPS in production:</strong></p>
+<pre>app.use((req, res, next) => {
+  if (req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(301, 'https://' + req.headers.host + req.url);
+  }
+  next();
+});</pre>
+<p><strong>Also add HSTS</strong> so browsers remember to use HTTPS:</p>
+<pre>Strict-Transport-Security: max-age=31536000; includeSubDomains</pre>
+<p><strong>Verification:</strong> All entries in a new HAR capture should start with <code>https://</code>.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>GET http://cdn.example.com/assets/main.js</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+    <details class="finding-item" style="border-left-color:#e53935" >
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Verbose error response</span>
+        <span class="sev-pill" style="background:#c62828;color:#fff">High</span>
+        <span class="finding-count-badge">1 occurrence</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">Error responses contain stack traces or SQL error messages. This leaks internal implementation details (file paths, library versions, query structure) that help attackers plan further attacks. Errors shown to users should be generic.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Return generic error messages to clients. Log the full detail server-side only.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>Stack traces and SQL errors reveal internal file paths, library versions, query structure, and logic. All of this is useful to an attacker planning further exploitation.</p>
+<p><strong>Bad (leaks internals):</strong></p>
+<pre>HTTP 500
+Traceback (most recent call last):
+  File "/app/api/users.py", line 42, in get_user
+    result = db.query("SELECT * FROM users WHERE id=" + user_id)
+AttributeError: 'NoneType' object has no attribute 'query'</pre>
+<p><strong>Good (generic response):</strong></p>
+<pre>HTTP 500
+{ "error": "An unexpected error occurred. Please try again." }</pre>
+<p><strong>In Express.js:</strong></p>
+<pre>app.use((err, req, res, next) => {
+  console.error(err); // log full error server-side
+  res.status(500).json({ error: 'An unexpected error occurred.' });
+});</pre>
+<p><strong>Verification:</strong> Trigger error conditions and confirm responses contain no stack traces or internal details.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>500 GET https://app.example.com/api/search?email=john.doe@example.com&amp;query=test</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+    <details class="finding-item" style="border-left-color:#e53935" >
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">JWT token in response body</span>
+        <span class="sev-pill" style="background:#c62828;color:#fff">High</span>
+        <span class="finding-count-badge">1 occurrence</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">JWT tokens were found in response bodies. While expected for login endpoints, JWTs in API responses may be logged by intermediaries or cached by clients. Ensure tokens are only present where expected and are short-lived.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Return JWTs only at login. Use short expiry times and prefer HttpOnly cookies for storage.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>JWTs returned in JSON response bodies may be logged by API gateways, stored in browser localStorage (XSS risk), or leaked in error logs.</p>
+<p><strong>Preferred: set token in an HttpOnly cookie instead of JSON body:</strong></p>
+<pre>// Express.js
+res.cookie('access_token', token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'Strict',
+  maxAge: 15 * 60 * 1000 // 15 minutes
+});
+res.json({ message: 'Login successful' }); // no token in body</pre>
+<p><strong>If returning in body is required (e.g. mobile clients), use short expiry:</strong></p>
+<pre>jwt.sign(payload, secret, { expiresIn: '15m' })</pre>
+<p><strong>Never store JWTs in localStorage.</strong> Use memory or HttpOnly cookies instead.<br>
+<strong>Verification:</strong> Confirm token does not appear in response body for non-login endpoints.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>POST https://app.example.com/api/login</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+    <details class="finding-item" style="border-left-color:#e53935" >
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Personal data in URL</span>
+        <span class="sev-pill" style="background:#c62828;color:#fff">High</span>
+        <span class="finding-count-badge">1 occurrence</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">Personally identifiable information (email, NRIC, phone number, or PII-named parameters) was found in request URLs. URLs are logged by web servers, CDNs, and proxies, and may appear in browser history. PII should not be included in URLs.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Remove personal data from URLs. Use request bodies or opaque identifiers instead.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>URLs containing emails, NRIC, phone numbers, or PII-named parameters are logged by every intermediary between client and server.</p>
+<p><strong>Instead of:</strong></p>
+<pre>GET /api/search?email=john@example.com&nric=S1234567A</pre>
+<p><strong>Use a POST body:</strong></p>
+<pre>POST /api/search
+Content-Type: application/json
+{ "email": "john@example.com" }</pre>
+<p><strong>For resource URLs, use opaque identifiers:</strong></p>
+<pre>// Bad
+GET /profile/S1234567A
+
+// Good: use an internal UUID instead
+GET /profile/a3f2c1d4-8e7b-4a2c-9f1e-2b3c4d5e6f7a</pre>
+<p><strong>Verification:</strong> Grep server access logs after the fix to confirm PII no longer appears in URL paths or query strings.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>GET https://app.example.com/api/search?email=john.doe@example.com&amp;query=test (email, PII param name)</li>
+          </ul>
+        </div>
+      </div>
+    </details></div></div>
+</section>
+
+<section class="card-section" id="sev-medium">
+  <div class="section-header">
+    <span class="section-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 2.5L14 13H2L8 2.5z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><line x1="8" y1="7" x2="8" y2="10" stroke="white" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.8" r="0.8" fill="white"/></svg></span>
+    <h2 class="section-title">Medium Findings</h2>
+    <span class="section-count">7</span>
+  </div>
+  <div class="section-body"><div class="finding-list">
+    <details class="finding-item" style="border-left-color:#f59e0b" open>
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Mixed content (HTTP resources on HTTPS page)</span>
+        <span class="sev-pill" style="background:#d97706;color:#fff">Medium</span>
+        <span class="finding-count-badge">1 occurrence</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">HTTPS pages are loading resources (scripts, images, stylesheets) over plain HTTP. Attackers can intercept and tamper with these HTTP resources to inject malicious content into otherwise secure pages.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Update all resource URLs to HTTPS. Use the CSP upgrade-insecure-requests directive.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>Mixed content (HTTP resources on HTTPS pages) allows network attackers to intercept and tamper with those resources, potentially injecting malicious scripts or styles.</p>
+<p><strong>Quick fix: add CSP directive to auto-upgrade HTTP resources:</strong></p>
+<pre>Content-Security-Policy: upgrade-insecure-requests</pre>
+<p><strong>Proper fix: update all hardcoded HTTP URLs in templates and code:</strong></p>
+<pre>// Bad
+&lt;script src="http://cdn.example.com/app.js"&gt;&lt;/script&gt;
+
+// Good
+&lt;script src="https://cdn.example.com/app.js"&gt;&lt;/script&gt;
+// or use protocol-relative
+&lt;script src="//cdn.example.com/app.js"&gt;&lt;/script&gt;</pre>
+<p><strong>Find mixed content:</strong> Open Chrome DevTools → Console. Mixed content warnings appear as errors when loading the page.</p>
+<p><strong>Verification:</strong> No mixed content warnings in the browser console after the fix.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>https://app.example.com/dashboard</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+    <details class="finding-item" style="border-left-color:#f59e0b" >
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Cookie missing Secure flag</span>
+        <span class="sev-pill" style="background:#d97706;color:#fff">Medium</span>
+        <span class="finding-count-badge">1 occurrence</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">One or more cookies are set without the Secure flag. Without this flag, the cookie can be transmitted over plain HTTP connections, exposing session tokens or other sensitive values to network interception.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Add the Secure flag to all cookies so they are only sent over HTTPS.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>Without the Secure flag, cookies can be transmitted over plain HTTP connections, exposing session tokens to network interception.</p>
+<p><strong>Set-Cookie header:</strong></p>
+<pre>Set-Cookie: session_id=abc123; Secure; HttpOnly; SameSite=Lax</pre>
+<p><strong>Express.js:</strong></p>
+<pre>res.cookie('session_id', value, {
+  secure: true,      // only sent over HTTPS
+  httpOnly: true,
+  sameSite: 'lax'
+});</pre>
+<p><strong>Express session middleware:</strong></p>
+<pre>app.use(session({
+  cookie: { secure: true, httpOnly: true, sameSite: 'lax' }
+}));</pre>
+<p><strong>Note:</strong> The Secure flag has no effect on localhost. Test with HTTPS in staging.<br>
+<strong>Verification:</strong> Recheck the Set-Cookie response headers and confirm <code>Secure</code> is present.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>session_id (app.example.com)</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+    <details class="finding-item" style="border-left-color:#f59e0b" >
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Cookie missing HttpOnly flag</span>
+        <span class="sev-pill" style="background:#d97706;color:#fff">Medium</span>
+        <span class="finding-count-badge">2 occurrences</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">One or more cookies are set without the HttpOnly flag. Without this flag, the cookie is accessible via JavaScript, making it vulnerable to theft through XSS attacks.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Add the HttpOnly flag to session and auth cookies to prevent JavaScript access.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>Without HttpOnly, cookies are readable via <code>document.cookie</code> in JavaScript. An XSS vulnerability anywhere on the page can steal the session token.</p>
+<p><strong>Set-Cookie header:</strong></p>
+<pre>Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Lax</pre>
+<p><strong>Express.js:</strong></p>
+<pre>res.cookie('session_id', value, { httpOnly: true, secure: true });</pre>
+<p><strong>Spring Boot:</strong></p>
+<pre>server.servlet.session.cookie.http-only=true
+server.servlet.session.cookie.secure=true</pre>
+<p><strong>Django:</strong></p>
+<pre>SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = True</pre>
+<p><strong>Note:</strong> Only apply HttpOnly to cookies that do not need to be read by JavaScript (session tokens, auth cookies). Cookies intentionally read by JS (e.g. CSRF tokens) should remain accessible.<br>
+<strong>Verification:</strong> In DevTools → Application → Cookies, confirm the HttpOnly column is checked.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>session_id (app.example.com)</li><li>user_pref (app.example.com)</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+    <details class="finding-item" style="border-left-color:#f59e0b" >
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Missing Content-Security-Policy header</span>
+        <span class="sev-pill" style="background:#d97706;color:#fff">Medium</span>
+        <span class="finding-count-badge">5 occurrences</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">Responses are missing the Content-Security-Policy security header. Without CSP, browsers have no restrictions on what scripts or resources can be loaded, making XSS attacks easier to execute.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Add a Content-Security-Policy header to restrict what resources the browser can load.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>Without CSP, browsers have no restrictions on loading scripts from arbitrary origins, making XSS attacks easier to execute and harder to contain.</p>
+<p><strong>Starter policy (restrictive, safe default):</strong></p>
+<pre>Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'</pre>
+<p><strong>Express.js with helmet:</strong></p>
+<pre>const helmet = require('helmet');
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'"],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+  }
+}));</pre>
+<p><strong>Nginx:</strong></p>
+<pre>add_header Content-Security-Policy "default-src 'self';" always;</pre>
+<p><strong>Tip:</strong> Start with <code>Content-Security-Policy-Report-Only</code> to test without enforcing. Use <a href="https://csp-evaluator.withgoogle.com" target="_blank">csp-evaluator.withgoogle.com</a> to validate.<br>
+<strong>Verification:</strong> Check the response headers in DevTools → Network → response headers.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>app.example.com</li><li>cdn.example.com</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+    <details class="finding-item" style="border-left-color:#f59e0b" >
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Missing Strict-Transport-Security header</span>
+        <span class="sev-pill" style="background:#d97706;color:#fff">Medium</span>
+        <span class="finding-count-badge">5 occurrences</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">Responses are missing the Strict-Transport-Security security header. Without HSTS, browsers may allow HTTP connections, enabling downgrade attacks and traffic interception.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Add HSTS to instruct browsers to always use HTTPS for your domain.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>Without HSTS, a user's first request may go over HTTP (before the 301 redirect), which an attacker can intercept. HSTS tells the browser to always use HTTPS, with no first-request exposure.</p>
+<p><strong>Recommended header:</strong></p>
+<pre>Strict-Transport-Security: max-age=31536000; includeSubDomains</pre>
+<p><strong>Nginx:</strong></p>
+<pre>add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;</pre>
+<p><strong>Express.js with helmet:</strong></p>
+<pre>app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true }));</pre>
+<p><strong>Note:</strong> Only add HSTS on HTTPS responses. Do not add it on HTTP responses.<br>
+<strong>Advanced:</strong> Submit to the HSTS preload list (hstspreload.org) to be hardcoded into browsers. Requires <code>max-age=31536000; includeSubDomains; preload</code>.<br>
+<strong>Verification:</strong> Check response headers in DevTools for the <code>Strict-Transport-Security</code> header.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>app.example.com</li><li>cdn.example.com</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+    <details class="finding-item" style="border-left-color:#f59e0b" >
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Missing X-Content-Type-Options header</span>
+        <span class="sev-pill" style="background:#d97706;color:#fff">Medium</span>
+        <span class="finding-count-badge">2 occurrences</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">Responses are missing the X-Content-Type-Options security header. Without this header, browsers may sniff response content types, potentially executing malicious content.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Add X-Content-Type-Options: nosniff to prevent MIME type sniffing.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>Without this header, browsers may ignore the declared Content-Type and guess the content type from the response body. An attacker can exploit this to make the browser execute a malicious file as JavaScript.</p>
+<p><strong>Header to add:</strong></p>
+<pre>X-Content-Type-Options: nosniff</pre>
+<p><strong>Nginx:</strong></p>
+<pre>add_header X-Content-Type-Options "nosniff" always;</pre>
+<p><strong>Express.js with helmet:</strong></p>
+<pre>app.use(helmet.noSniff()); // adds X-Content-Type-Options: nosniff</pre>
+<p><strong>Note:</strong> This is a simple one-liner fix with no downsides. Add it to all responses.<br>
+<strong>Verification:</strong> Check response headers in DevTools. <code>X-Content-Type-Options: nosniff</code> should appear on all responses.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>cdn.example.com</li><li>app.example.com</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+    <details class="finding-item" style="border-left-color:#f59e0b" >
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Missing X-Frame-Options header</span>
+        <span class="sev-pill" style="background:#d97706;color:#fff">Medium</span>
+        <span class="finding-count-badge">5 occurrences</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">Responses are missing the X-Frame-Options security header. Without this header, pages can be embedded in iframes on other sites, enabling clickjacking attacks.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Add X-Frame-Options to prevent your pages from being embedded in iframes.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>Without this header, attackers can embed your pages in iframes on malicious sites and trick users into clicking hidden elements (clickjacking).</p>
+<p><strong>Recommended header:</strong></p>
+<pre>X-Frame-Options: DENY          // never allow embedding
+X-Frame-Options: SAMEORIGIN    // allow embedding only from same origin</pre>
+<p><strong>Nginx:</strong></p>
+<pre>add_header X-Frame-Options "DENY" always;</pre>
+<p><strong>Express.js with helmet:</strong></p>
+<pre>app.use(helmet.frameguard({ action: 'deny' }));</pre>
+<p><strong>Modern alternative:</strong> use CSP frame-ancestors instead (more flexible):</p>
+<pre>Content-Security-Policy: frame-ancestors 'none';</pre>
+<p><strong>Note:</strong> If your app has legitimate iframe embedding needs (e.g. embedded in a partner site), use <code>SAMEORIGIN</code> or CSP <code>frame-ancestors</code> with specific origins.<br>
+<strong>Verification:</strong> Try embedding your page in an iframe on another page. The browser should block it.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>app.example.com</li><li>cdn.example.com</li>
+          </ul>
+        </div>
+      </div>
+    </details></div></div>
+</section>
+
+<section class="card-section" id="sev-low">
+  <div class="section-header">
+    <span class="section-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5v11" stroke="white" stroke-width="1.5" stroke-linecap="round"/><path d="M3 2.5h7l-1.5 3L10 9H3" stroke="white" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+    <h2 class="section-title">Low Findings</h2>
+    <span class="section-count">1</span>
+  </div>
+  <div class="section-body"><div class="finding-list">
+    <details class="finding-item" style="border-left-color:#cddc39" open>
+      <summary class="finding-summary">
+        <span class="expand-icon">&#9654;</span>
+        <span class="finding-title">Cookie missing SameSite attribute</span>
+        <span class="sev-pill" style="background:#9e9d24;color:#fff">Low</span>
+        <span class="finding-count-badge">1 occurrence</span>
+      </summary>
+      <div class="finding-body">
+        <div class="prose-block">
+          <div class="prose-label">Description</div>
+          <div class="prose-content">One or more cookies are set without a SameSite attribute. Without SameSite, cookies are sent with cross-site requests, increasing the risk of CSRF attacks. Recommended value: SameSite=Lax or SameSite=Strict.</div>
+        </div>
+        
+        <div class="prose-block">
+          <div class="prose-label remediation-label">How to Fix</div>
+          <div class="prose-content remediation-content">Add SameSite=Lax or Strict to all cookies to reduce CSRF risk.
+            
+            <details class="remediation-details">
+              <summary class="remediation-toggle"><span class="expand-icon-sm">&#9654;</span> More detail</summary>
+              <div class="remediation-detail-body"><p>Without SameSite, cookies are sent with all cross-site requests including form POSTs from other domains, enabling CSRF attacks.</p>
+<p><strong>SameSite values:</strong></p>
+<pre>SameSite=Strict  // cookie never sent cross-site (highest security, may break OAuth flows)
+SameSite=Lax     // cookie sent on top-level navigation GET only (recommended default)
+SameSite=None    // cookie always sent cross-site (requires Secure flag)</pre>
+<p><strong>Recommended default:</strong></p>
+<pre>Set-Cookie: session_id=abc123; SameSite=Lax; Secure; HttpOnly</pre>
+<p><strong>Express.js:</strong></p>
+<pre>res.cookie('session_id', value, { sameSite: 'lax', secure: true, httpOnly: true });</pre>
+<p><strong>Note:</strong> Use <code>SameSite=None; Secure</code> only for cookies that must be sent in cross-site contexts (e.g. embedded widgets, payment iframes).<br>
+<strong>Verification:</strong> In DevTools → Application → Cookies, confirm the SameSite column shows Lax or Strict.</p></div>
+            </details>
+          </div>
+        </div>
+        <div class="prose-block">
+          <div class="prose-label">Evidence</div>
+          <ul class="evidence-list">
+            <li>session_id (app.example.com)</li>
+          </ul>
+        </div>
+      </div>
+    </details></div></div>
+</section>
+
+</div>
+
+<footer>
+  <span class="footer-brand">har-security-scan</span>
+</footer>
+
+</body>
+</html>

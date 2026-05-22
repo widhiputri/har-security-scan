@@ -1,0 +1,30 @@
+{
+  "name": "har-security-scan",
+  "version": "0.1.0",
+  "description": "Scan HAR files for security issues and generate a clean HTML report",
+  "keywords": ["har", "security", "pentest", "appsec", "report", "html", "cookies", "headers", "owasp", "nodejs"],
+  "author": "Widhi Putri",
+  "license": "MIT",
+  "main": "src/report.js",
+  "bin": {
+    "har-security-scan": "bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/widhiputri/har-security-scan.git"
+  },
+  "homepage": "https://github.com/widhiputri/har-security-scan#readme",
+  "bugs": {
+    "url": "https://github.com/widhiputri/har-security-scan/issues"
+  }
+}
