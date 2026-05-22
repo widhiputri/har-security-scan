@@ -1,5 +1,9 @@
 # har-security-scan
 
+[![npm version](https://img.shields.io/npm/v/har-security-scan)](https://www.npmjs.com/package/har-security-scan)
+[![node](https://img.shields.io/badge/node-%3E%3D16-brightgreen)](https://nodejs.org)
+[![license](https://img.shields.io/npm/l/har-security-scan)](LICENSE)
+
 Scan a HAR file for common security issues and generate a clean, self-contained HTML report.
 
 No external dependencies. Pure Node.js.

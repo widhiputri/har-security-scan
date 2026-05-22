@@ -22,10 +22,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Run scan against sample HAR
-        run: node bin/cli.js examples/sample.har --output /tmp/test-report.html
+        run: node bin/cli.js examples/sample.har --output test-report.html
 
       - name: Verify report was generated
-        run: test -f /tmp/test-report.html
+        run: test -f test-report.html
 
       - name: Verify --fail-on high triggers exit code 1
         run: |

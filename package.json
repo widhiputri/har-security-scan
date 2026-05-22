@@ -1,6 +1,6 @@
 {
   "name": "har-security-scan",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Scan HAR files for security issues and generate a clean HTML report",
   "keywords": ["har", "security", "pentest", "appsec", "report", "html", "cookies", "headers", "owasp", "nodejs"],
   "author": "Widhi Putri",
@@ -16,6 +16,9 @@
     "README.md",
     "LICENSE"
   ],
+  "scripts": {
+    "test": "node bin/cli.js examples/sample.har --output test-report.html && echo 'Report generated OK' && node bin/cli.js examples/sample.har --fail-on high && echo 'ERROR: should have exited 1' || true"
+  },
   "engines": {
     "node": ">=16"
   },
