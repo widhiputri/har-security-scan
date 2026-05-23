@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/widhiputri/har-security-scan.git"
+    "url": "git+https://github.com/widhiputri/har-security-scan.git"
   },
   "homepage": "https://github.com/widhiputri/har-security-scan#readme",
   "bugs": {
